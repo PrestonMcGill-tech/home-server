@@ -1,31 +1,29 @@
 from flask import Flask, jsonify, render_template 
-import json 
-DATA_FILE = "weather.json"
+from classes import Analyser 
 
+DB_FILE = "weather.db"
+analyser = Analyser(DB_FILE)
 
 app = Flask(__name__)
 
-def get_latest():
-    with open(DATA_FILE, 'r') as f:
-        data = json.load(f)
-    return data[-1]
-
 @app.route('/')
 def home():
-    reading = get_latest()
-    return render_template('index.html', reading=reading)
+    reading = analyser.latest_reading("001")
+    if reading is None:
+        return render_template('index.html', reading=None)
+    return render_template('index.html', reading={"temperature": reading[0], "humidity": reading[1], "timestamp": reading[2]})
 
 @app.route('/api/weather')
 def weather():
-    reading = get_latest()
-    return jsonify(reading)
+    reading = analyser.latest_reading("001")
+    if reading is None:
+        return jsonify({"error": "No data"}), 404
+    return jsonify({"temperature": reading[0], "humidity": reading[1], "timestamp": reading[2]})
 
 @app.route('/api/weather/history')
 def weather_history():
-    with open(DATA_FILE, 'r') as f:
-        data = json.load(f)
-    return jsonify(data)
-
+    reading = analyser.all_readings("001")
+    return jsonify(reading)
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,5 +1,5 @@
 import datetime
-from models import *
+from classes import *
 
 DEVICE_FILE = "devices.json"
 DATA_FILE = "weather.json"

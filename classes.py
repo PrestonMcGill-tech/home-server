@@ -2,6 +2,7 @@ import json
 import serial
 from datetime import datetime 
 import time
+import sqlite3
  
 class Device:
     def __init__(
@@ -185,45 +186,68 @@ class DataParser:
             return 
 
 class DataLogger:
-    def __init__(self):
-        pass 
+    def __init__(self, db_file):
+        self.db_file = db_file
 
-    def logToFile(self, data, destination):
+    def log(self, data):
         if data is None:
             print("Data None value, not writing to memory.")
             return
 
-        try:
-            with open(destination, 'r') as f:
-                existing = json.load(f)
-    
-        except (FileNotFoundError, json.JSONDecodeError):
-            existing = []
-
         data["timestamp"] = datetime.now().isoformat(timespec="seconds")  # add this
-        existing.append(data)
+        
+        conn = sqlite3.connect(self.db_file)
+        cursor = conn.cursor()
 
-        with open(destination, 'w') as f:
-            json.dump(existing, f, indent=4)
+        cursor.execute('''
+            INSERT INTO readings (dev_id, temperature, humidity, timestamp)
+            VALUES (?, ?, ?, ?)
+        ''', (data["dev_id"], data["temperature"], data["humidity"], data["timestamp"]))
+
+        conn.commit()
+        conn.close()
+        print(f"Logged: {data}")
+
 
 class Analyser:
-    def __init__(self, file):
-        self.file = file 
+    def __init__(self, db_file):
+        self.db_file = db_file 
 
     def latest_reading(self, dev_id : str) -> tuple: 
-        with open(self.file) as f:
-            data = json.load(f)
+        conn = sqlite3.connect(self.db_file)
+        cursor = conn.cursor()
 
-        device_reading = [r for r in data if r["dev_id"] == dev_id]
+        cursor.execute('''
+            select temperature, humidity, timestamp
+            FROM readings 
+            WHERE dev_id = ?
+            ORDER BY id DESC
+            LIMIT 1
+        ''', (dev_id,))
 
-        if not device_reading:
-            return None 
+        row = cursor.fetchone()
+        conn.close()
 
-        last = device_reading[-1]
-        return (last["temperature"], last["humidity"], last["timestamp"])
-    
-    def device_summary():
-        pass
+        if row is None:
+            return None
+        
+        return (row[0], row[1], row[2])
 
-    def plot_history():
-        pass
+    def all_readings(self, dev_id):
+        conn = sqlite3.connect(self.db_file)
+        cursor = conn.cursor()
+
+        cursor.execute('''
+            SELECT dev_id, temperature, humidity, timestamp
+            FROM readings
+            WHERE dev_id = ?
+            ORDER BY id ASC
+        ''', (dev_id,))
+
+        rows = cursor.fetchall()
+        conn.close()
+
+        return [
+                {"dev_id": r[0], "temperature": r[1], "humidity": r[2], "timestamp": r[3]}
+                for r in rows
+                ]

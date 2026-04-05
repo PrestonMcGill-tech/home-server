@@ -3,12 +3,12 @@ import time
 
 
 PORT = "/dev/ttyACM0"
-DATA_FILE = "weather.json"
+DB_FILE = "weather.db"
 DEVICE_FILE = "devices.json"
 
 serial = SerialInterface("Arduino", PORT)
 parser = DataParser()
-logger = DataLogger()
+logger = DataLogger(DB_FILE)
 
 serial.connect()
 
@@ -17,5 +17,5 @@ while True:
     parsed = parser.temp(raw)
     if parsed is None:
         continue 
-    logger.logToFile(parsed, DATA_FILE)
+    logger.log(parsed)
     time.sleep(30)
