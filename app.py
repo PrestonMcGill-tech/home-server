@@ -20,5 +20,12 @@ def weather():
     reading = get_latest()
     return jsonify(reading)
 
+@app.route('/api/weather/history')
+def weather_history():
+    with open(DATA_FILE, 'r') as f:
+        data = json.load(f)
+    return jsonify(data)
+
+
 if __name__ == '__main__':
     app.run(debug=True)
