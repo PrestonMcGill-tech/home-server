@@ -15,5 +15,10 @@ def home():
     reading = get_latest()
     return render_template('index.html', reading=reading)
 
+@app.route('/api/weather')
+def weather():
+    reading = get_latest()
+    return jsonify(reading)
+
 if __name__ == '__main__':
     app.run(debug=True)

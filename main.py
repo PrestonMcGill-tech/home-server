@@ -1,4 +1,4 @@
-from models import * 
+from classes import * 
 import time
 
 
@@ -11,7 +11,6 @@ parser = DataParser()
 logger = DataLogger()
 
 serial.connect()
-
 
 while True:
     raw = serial.read()

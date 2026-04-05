@@ -1,6 +1,6 @@
 import json 
 import serial
-import datetime as datetime
+from datetime import datetime 
 import time
  
 class Device:
@@ -134,9 +134,11 @@ class SerialInterface:
         self.port = port
         self.baud = baud
         self.timeout = timeout
-        self.connected = False
-        self.ser = None 
-
+        self.connected = False 
+        self.ser = None
+    def __repr__(self):
+        print(f"name: {self.name}\n port: {self.port}\n baud {self.baud}")
+   
     def connect(self):
         try:
             self.ser = serial.Serial(self.port, self.baud, timeout=self.timeout)
@@ -144,12 +146,12 @@ class SerialInterface:
             print(f"{self.name} connected to {self.port} at {self.baud} baud")
         
         except serial.SerialException as e:
-            print(f"Failed to connect to port")
+            print(f"Failed to connect to port: {e}")
 
     def read(self):
         if not self.connected or self.ser is None:
             print("Not connected. Call connect() first.")
-            return 
+            return
 
         data = self.ser.readline()
         return data 
@@ -180,7 +182,7 @@ class DataParser:
 
         except Exception as e: # (ValueError, IndexError, AttributeError, TypeError):
             print(F"Parse error: {e}")
-            return None
+            return 
 
 class DataLogger:
     def __init__(self):
@@ -198,7 +200,7 @@ class DataLogger:
         except (FileNotFoundError, json.JSONDecodeError):
             existing = []
 
-        data["timestamp"] = datetime.datetime.now().isoformat(timespec="seconds")  # add this
+        data["timestamp"] = datetime.now().isoformat(timespec="seconds")  # add this
         existing.append(data)
 
         with open(destination, 'w') as f:
