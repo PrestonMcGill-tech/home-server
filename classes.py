@@ -16,7 +16,7 @@ class Device:
         self.name : str = name  
         self.dev_id: str = dev_id
         self.dev_type: str = dev_type
-        self.status: str = "offline" 
+        self.status: str = status 
 
     def __repr__(self): 
         return f"Name: {self.name}\nID: {self.dev_id}\nType: {self.dev_type}\nStatus: {self.status}"
@@ -43,7 +43,7 @@ class Device:
 class Registry:
     def __init__(self, device_file: str):
         self.device_file : str = device_file
-        self.devices = []
+        self.devices = {}
         self.load_devices()
     
     def load_devices(self):
