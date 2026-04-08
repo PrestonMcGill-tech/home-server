@@ -1,5 +1,13 @@
+import os 
 from flask import Flask, jsonify, render_template 
 from classes import Analyser 
+from dotenv import load_dotenv 
+
+
+load_dotenv()
+
+DB_FILE = os.getenv("DB_FILE")
+
 
 DB_FILE = "/app/data/weather.db"
 analyser = Analyser(DB_FILE)

@@ -1,0 +1,40 @@
+services:
+
+  web:
+    build: ./web
+    env_file:
+      - .env
+    volumes:
+      - ./classes.py:/app/classes.py
+      - ./data:/app/data
+    restart: unless-stopped
+    networks:
+      - homeserver
+
+  collector:
+    build: ./collector
+    env_file: 
+      - .env
+    devices:
+      - /dev/ttyACM0:/dev/ttyACM0
+    volumes:
+      - ./classes.py:/app/classes.py
+      - ./data:/app/data
+    restart: unless-stopped
+    networks: 
+      - homeserver
+
+  nginx:
+    build: ./nginx 
+    ports: 
+      - "8080:80"
+    depends_on:
+      - web 
+    restart: unless-stopped
+    networks:
+      - homeserver
+
+networks:
+  homeserver: 
+    driver: bridge
+

@@ -1,5 +1,4 @@
 import json 
-import serial
 from datetime import datetime 
 import time
 import sqlite3
@@ -141,6 +140,7 @@ class SerialInterface:
         print(f"name: {self.name}\n port: {self.port}\n baud {self.baud}")
    
     def connect(self):
+        import serial
         try:
             self.ser = serial.Serial(self.port, self.baud, timeout=self.timeout)
             self.connected = True 
@@ -251,3 +251,27 @@ class Analyser:
                 {"dev_id": r[0], "temperature": r[1], "humidity": r[2], "timestamp": r[3]}
                 for r in rows
                 ]
+
+class DataBase:
+    def __init__(self, db_file): 
+        self.db_file = db_file 
+        self.init_db()
+
+    def get_connection(self): 
+        return sqlite3.connect(self.db_file) 
+
+    def init_db(self):
+        conn = self.get_connection() 
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS readings 
+                (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                dev_id TEXT,
+                temperature REAL,
+                humidity REAL, 
+                timestamp, TEXT
+                )
+        ''')
+        conn.commit()
+        conn.close()
+        print("Database initialised")
+
